@@ -13,7 +13,7 @@ Accepted by _**MICCAI 2025**_
 
 ## Overview
 <div align="center">
-    <img src="figures/pipeline.png">
+    <img src="figures/pipeline.pdf">
 </div>
 
 
