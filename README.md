@@ -7,7 +7,7 @@
 
 Accepted by _**MICCAI 2025**_
 
-[[Paper]](https://papers.miccai.org/miccai-2025/paper/949_paper.pdf)
+[[Paper]](https://papers.miccai.org/miccai-2025/paper/0949_paper.pdf)
 
 </div>
 
