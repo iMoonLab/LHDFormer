@@ -13,7 +13,7 @@ Accepted by _**MICCAI 2025**_
 
 ## Overview
 <div align="center">
-    <img src="figures/pipeline.pdf">
+    <img src="figures/pipeline.png">
 </div>
 
 
@@ -40,7 +40,8 @@ Download the ABIDE dataset from [here](https://drive.google.com/file/d/14UGsikYH
 
 ### 2. Usage
 Run the following command to train the model.
-```bash main.sh
+```bash
+main.sh
 ```
 
 ## Cite our work
