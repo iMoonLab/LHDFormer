@@ -41,7 +41,7 @@ Download the ABIDE dataset from [here](https://drive.google.com/file/d/14UGsikYH
 ### 2. Usage
 Run the following command to train the model.
 ```bash
-main.sh
+sh main.sh
 ```
 
 ## Cite our work
