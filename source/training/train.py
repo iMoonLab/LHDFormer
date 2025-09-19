@@ -275,21 +275,6 @@ class Train:
                 wandb.run.summary["Best Test Sensitivity"] = test_result[-1]
                 wandb.run.summary["Best Test Specificity"] = test_result[-2]
 
-            # if (self.val_accuracy.avg > best_val_acc):
-            # # if (val_result[0] > best_val_AUC):
-            # #     best_val_AUC = val_result[0]
-            #     best_val_acc = self.val_accuracy.avg
-            #     best_test_acc = self.test_accuracy.avg
-            #     best_test_AUC = test_result[0]
-            #     best_test_sen = test_result[-1]
-            #     best_test_spec = test_result[-2]
-            #     wandb.run.summary["Best Test Accuracy"] = self.test_accuracy.avg
-            #     wandb.run.summary["Best Test AUC"] = test_result[0]
-            #     wandb.run.summary["Best Val AUC"] = val_result[0]
-            #     wandb.run.summary["Best Val Accuracy"] = self.val_accuracy.avg
-            #     wandb.run.summary["Best Test Sensitivity"] = test_result[-1]
-            #     wandb.run.summary["Best Test Specificity"] = test_result[-2]
-
             training_process.append({
                 "Epoch": epoch,
                 "Train Loss": self.train_loss.avg,
