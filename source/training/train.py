@@ -14,7 +14,9 @@ from source.components import LRScheduler
 import logging
 import pickle
 from ..utils.device import device_set
+
 device = device_set()
+
 
 class Train:
 
@@ -45,8 +47,8 @@ class Train:
         self.l1Loss = torch.nn.L1Loss()
 
     def init_meters(self):
-        self.train_loss, self.val_loss,\
-            self.test_loss, self.train_accuracy,\
+        self.train_loss, self.val_loss, \
+            self.test_loss, self.train_accuracy, \
             self.val_accuracy, self.test_accuracy = [
                 TotalMeter() for _ in range(6)]
 
@@ -65,7 +67,11 @@ class Train:
 
             lr_scheduler.update(optimizer=optimizer, step=self.current_step)
 
-            time_series, node_feature, label = time_series.to(device), node_feature.to(device), label.to(device)
+            time_series, node_feature, label = (
+                time_series.to(device),
+                node_feature.to(device),
+                label.to(device),
+            )
 
             if self.config.preprocess.continus:
                 time_series, node_feature, label = continus_mixup_data(
@@ -89,7 +95,11 @@ class Train:
         self.model.eval()
 
         for time_series, node_feature, label in dataloader:
-            time_series, node_feature, label = time_series.to(device), node_feature.to(device), label.to(device)
+            time_series, node_feature, label = (
+                time_series.to(device),
+                node_feature.to(device),
+                label.to(device),
+            )
             output, loss_pool = self.model(time_series, node_feature)
 
             label = label.float()
@@ -124,8 +134,13 @@ class Train:
         assign_matrices = []
         attn_weights_local = []
         self.model.eval()
+
         for time_series, node_feature, label in self.train_dataloader:
-            time_series, node_feature, label = time_series.to(device), node_feature.to(device), label.to(device)
+            time_series, node_feature, label = (
+                time_series.to(device),
+                node_feature.to(device),
+                label.to(device),
+            )
             prediction, _ = self.model(time_series, node_feature)
 
             assignMat = self.model.get_assign_mat()
@@ -138,15 +153,17 @@ class Train:
             labels.append(label_np)
             attn_weights.append(attn_np)
 
-
         for time_series, node_feature, label in self.val_dataloader:
-            time_series, node_feature, label = time_series.to(device), node_feature.to(device), label.to(device)
+            time_series, node_feature, label = (
+                time_series.to(device),
+                node_feature.to(device),
+                label.to(device),
+            )
             prediction, _ = self.model(time_series, node_feature)
 
             assignMat = self.model.get_assign_mat()
             assign_np = assignMat.detach().cpu().numpy()
             assign_matrices.append(assign_np)
-
 
             attn = self.model.get_attention_weights()
             attn_np = attn[0].detach().cpu().numpy()
@@ -160,13 +177,16 @@ class Train:
             assign_matrices_test = []
 
         for time_series, node_feature, label in self.test_dataloader:
-            time_series, node_feature, label = time_series.to(device), node_feature.to(device), label.to(device)
+            time_series, node_feature, label = (
+                time_series.to(device),
+                node_feature.to(device),
+                label.to(device),
+            )
             prediction, _ = self.model(time_series, node_feature)
 
             assignMat = self.model.get_assign_mat()
             assign_np = assignMat.detach().cpu().numpy()
             assign_matrices.append(assign_np)
-
 
             attn = self.model.get_attention_weights()
             attn_np = attn[0].detach().cpu().numpy()
@@ -179,58 +199,110 @@ class Train:
                 labels_test.append(label_np)
                 attn_weights_test.append(attn_np)
 
-
-        np.save(self.save_path/f"attnWeights.npy", attn_weights, allow_pickle=True)
-        np.save(self.save_path/f"labels.npy", labels, allow_pickle=True)
-        # np.save(self.save_path/f"assign_matrices.npy", assign_matrices, allow_pickle=True)
+        np.save(
+            self.save_path / "attnWeights.npy",
+            attn_weights,
+            allow_pickle=True,
+        )
+        np.save(
+            self.save_path / "labels.npy",
+            labels,
+            allow_pickle=True,
+        )
+        # np.save(self.save_path / "assign_matrices.npy",
+        #         assign_matrices, allow_pickle=True)
 
         if self.save_test_attn_weights:
-            np.save(self.save_path/f"attnWeights_test.npy", attn_weights_test, allow_pickle=True)
-            np.save(self.save_path/f"labels_test.npy", labels_test, allow_pickle=True)
-            np.save(self.save_path/f"assign_matrices_test.npy", assign_matrices_test, allow_pickle=True)
+            np.save(
+                self.save_path / "attnWeights_test.npy",
+                attn_weights_test,
+                allow_pickle=True,
+            )
+            np.save(
+                self.save_path / "labels_test.npy",
+                labels_test,
+                allow_pickle=True,
+            )
+            np.save(
+                self.save_path / "assign_matrices_test.npy",
+                assign_matrices_test,
+                allow_pickle=True,
+            )
 
     def generate_save_learnable_matrix(self):
 
         learable_matrixs = []
-
         labels = []
 
         for time_series, node_feature, label in self.test_dataloader:
             label = label.long()
-            time_series, node_feature, label = time_series.to(device), node_feature.to(device), label.to(device)
+            time_series, node_feature, label = (
+                time_series.to(device),
+                node_feature.to(device),
+                label.to(device),
+            )
             learable_matrix, _ = self.model(time_series, node_feature)
 
             learable_matrixs.append(learable_matrix.cpu().detach().numpy())
             labels += label.tolist()
 
         self.save_path.mkdir(exist_ok=True, parents=True)
-        np.save(self.save_path/"learnable_matrix.npy", {'matrix': np.vstack(
-            learable_matrixs), "label": np.array(labels)}, allow_pickle=True)
+        np.save(
+            self.save_path / "learnable_matrix.npy",
+            {
+                'matrix': np.vstack(learable_matrixs),
+                "label": np.array(labels),
+            },
+            allow_pickle=True,
+        )
 
     def save_result(self, results: torch.Tensor):
         self.save_path.mkdir(exist_ok=True, parents=True)
-        np.save(self.save_path/"training_process.npy",
-                results, allow_pickle=True)
+        np.save(
+            self.save_path / "training_process.npy",
+            results,
+            allow_pickle=True,
+        )
 
-        torch.save(self.model.state_dict(), self.save_path/"model.pt")
+        # 保存训练结束时的模型。
+        torch.save(self.model.state_dict(), self.save_path / "model.pt")
 
     def train(self):
         training_process = []
         self.current_step = 0
-        best_val_AUC = 0
-        best_val_acc = 0
-        best_test_acc = 0
-        best_test_AUC = 0
-        best_test_sen = 0
-        best_test_spec = 0
+
+        # best_val_AUC = 0
+        # best_val_acc = 0
+        # best_test_acc = 0
+        # best_test_AUC = 0
+        # best_test_sen = 0
+        # best_test_spec = 0
+
+        final_test_metrics = [0.0, 0.0, 0.0, 0.0]
+
         for epoch in range(self.epochs):
             self.reset_meters()
             self.train_per_epoch(self.optimizers[0], self.lr_schedulers[0])
-            val_result = self.test_per_epoch(self.val_dataloader,
-                                             self.val_loss, self.val_accuracy)
 
-            test_result = self.test_per_epoch(self.test_dataloader,
-                                              self.test_loss, self.test_accuracy)
+            val_result = self.test_per_epoch(
+                self.val_dataloader,
+                self.val_loss,
+                self.val_accuracy,
+            )
+
+            test_result = self.test_per_epoch(
+                self.test_dataloader,
+                self.test_loss,
+                self.test_accuracy,
+            )
+
+            # 每轮直接覆盖，最终保留最后一轮的测试指标。
+            final_test_metrics = [
+                self.test_accuracy.avg,
+                test_result[0],
+                test_result[-1],
+                test_result[-2],
+            ]
 
             # self.logger.info(f"device:{device}")
 
@@ -244,7 +316,7 @@ class Train:
                 f'Test Sen:{test_result[-1]:.4f}',
                 f'Test Spe:{test_result[-2]:.4f}',
                 f'Test F1:{test_result[-4]:.4f}',
-                f'LR:{self.lr_schedulers[0].lr:.5f}'
+                f'LR:{self.lr_schedulers[0].lr:.5f}',
             ]))
 
             wandb.log({
@@ -262,18 +334,19 @@ class Train:
                 'micro precision': test_result[-6],
             })
 
-            if(self.test_accuracy.avg > best_test_acc):
-                best_val_acc = val_result[0]
-                best_test_acc =  self.test_accuracy.avg
-                best_test_AUC =  test_result[0]
-                best_test_sen = test_result[-1]
-                best_test_spec = test_result[-2]
-                wandb.run.summary["Best Test Accuracy"] = self.test_accuracy.avg
-                wandb.run.summary["Best Test AUC"] = test_result[0]
-                wandb.run.summary["Best Val AUC"] = val_result[0]
-                wandb.run.summary["Best Val Accuracy"] = self.val_accuracy.avg
-                wandb.run.summary["Best Test Sensitivity"] = test_result[-1]
-                wandb.run.summary["Best Test Specificity"] = test_result[-2]
+            # 注释掉根据测试集准确率取最优的逻辑及对应汇总。
+            # if(self.test_accuracy.avg > best_test_acc):
+            #     best_val_acc = val_result[0]
+            #     best_test_acc = self.test_accuracy.avg
+            #     best_test_AUC = test_result[0]
+            #     best_test_sen = test_result[-1]
+            #     best_test_spec = test_result[-2]
+            #     wandb.run.summary["Best Test Accuracy"] = self.test_accuracy.avg
+            #     wandb.run.summary["Best Test AUC"] = test_result[0]
+            #     wandb.run.summary["Best Val AUC"] = val_result[0]
+            #     wandb.run.summary["Best Val Accuracy"] = self.val_accuracy.avg
+            #     wandb.run.summary["Best Test Sensitivity"] = test_result[-1]
+            #     wandb.run.summary["Best Test Specificity"] = test_result[-2]
 
             training_process.append({
                 "Epoch": epoch,
@@ -298,4 +371,6 @@ class Train:
             self.generate_save_learnable_matrix()
 
         self.save_result(training_process)
-        return [best_test_acc,best_test_AUC,best_test_sen,best_test_spec]
+
+        # return [best_test_acc, best_test_AUC, best_test_sen, best_test_spec]
+        return final_test_metrics
